@@ -1,0 +1,135 @@
+@extends('User.layout.app')
+
+@section('content')
+    <div class="page-content">
+        <div class="container-fluid">
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0 font-size-18">Event Details</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:history.back();">Events</a></li>
+                                <li class="breadcrumb-item active">Event Details</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section>
+            <div class="mb-2">
+                <div class="col-lg-12">
+                    <div class="card  p-2">
+                        <div class="d-flex justify-content-end">
+                            <a href="javascript:history.back()" class="btn btn-primary"><i
+                                    class="fas fa-arrow-left me-2"></i> Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 p-2">
+                    <div class="card " id="event_banner">
+                    </div>
+                </div>
+
+
+                <div class="col-lg-8">
+                    <div class="h4">Event Name : <strong id="evnt_title"></strong> ( <strong id="evnt_date"></strong> )
+                    </div>
+                </div>
+                <div class="col-lg-4" id="status_id">
+                    
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="h5">Total Tickets : <strong id="evnt_total"></strong> </div>
+                </div>
+
+
+
+
+
+                <div class="col-lg-6 mt-2">
+                    <div class="h5">Address : <span id="state_id"></span> , <span id="dist_id"></span> <span
+                            id="city_id"></span>, <span id="pincode_id"></span> </div>
+                </div>
+                <div class="col-lg-12">
+                    <h4 class="mt-3">Event Details</h4>
+                    <div id="details" class="my-3"></div>
+                    <hr>
+                </div>
+
+
+            </div>
+        </section>
+    @endsection
+
+
+
+
+    @section('script')
+        <script>
+            function formatHumanReadableDate(datetime) {
+                const dateObj = new Date(datetime);
+
+                if (isNaN(dateObj)) {
+                    return "Invalid Date";
+                }
+
+                const options = {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true, // Converts to 12-hour format with AM/PM
+                };
+
+                return dateObj.toLocaleString('en-US', options);
+            }
+
+            function fatchEvent() {
+                let id = '{{ $id }}';
+                $.ajax({
+                    type: "GET",
+                    url: `{{ url('User/Fatch-Event/${id}') }}`,
+                    dataType: "json",
+                    success: function(response) {
+                        const data = response.data;
+                        $('#evnt_title').text(data.event_title);
+                        $('#evnt_date').text(formatHumanReadableDate(data.event_date));
+
+                        $('#pincode_id').text(data.pincode);
+                        $('#dist_id').text(data.district_title);
+                        $('#city_id').text(data.city_title);
+                        $('#state_id').text(data.state_title);
+
+                        $('#details').html(data.event_desc);
+                        if (data.status == "0") {
+                            
+                            $('#status_id').text('Archive').addClass('text-secondary');
+                        } else if (data.status == '1') {
+                            $('#status_id').html(`<a href="{{ url('User/Tickets/Page/') }}/${data.id}" class="btn btn-primary">Book Now</a>`);
+
+                        } else if (data.status == "2") {
+                            $('#status_id').text('Completed').addClass('text-success');
+                            
+                        }
+                        $('#evnt_total').text(data.total_tickets);
+                        $('#event_banner').html(`<img src="${data.event_banner_url}" />`);
+
+                    }
+                });
+            }
+
+            $(document).ready(function() {
+                fatchEvent()
+            });
+        </script>
+    @endsection
